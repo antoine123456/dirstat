@@ -5,7 +5,7 @@
 #    creux (sparse) de tailles variées, sur plusieurs niveaux, de types variés.
 #    Ils n'occupent presque rien sur le disque mais ont leur taille apparente.
 # 2. Le scanne avec dirstat.py.
-# 3. Ajoute le bandeau « Démo de dirstat » en haut de la page.
+# 3. Remplit l'en-tête (démo, liens) et la note de bas de page.
 #
 # Usage : docs/make_demo.sh        (depuis n'importe où)
 set -euo pipefail
@@ -100,25 +100,22 @@ python3 - docs/index.html <<'PY'
 import sys
 p = sys.argv[1]
 s = open(p, encoding="utf-8").read()
-css = """  #demo { flex:none; display:flex; align-items:center; gap:14px; padding:6px 12px;
-    background:#16243a; border-bottom:1px solid #24395a; color:#b9c7dc; font-size:12.5px; }
-  #demo a { color:#8fbfff; text-decoration:none; white-space:nowrap; }
-  #demo a:hover { text-decoration:underline; }
-  #demo code { background:rgba(255,255,255,.08); border-radius:4px; padding:1px 5px;
-    font:12px ui-monospace,SFMono-Regular,Menlo,monospace; color:#e9e9ea; white-space:nowrap; }
-  #demo .msg { flex:1; min-width:0; }
-  @media (max-width: 720px) { #demo { flex-wrap:wrap; gap:4px 12px; padding:6px 8px; font-size:12px; }
-    #demo .msg { order:3; flex-basis:100%; } }
-</style>"""
-banner = """<body>
-<div id="demo">
-  <a href="https://antoine123456.github.io/">← antoine123456</a>
-  <span class="msg">Démo de dirstat, scan d'un dossier d'exemple. Lance <code>python3 dirstat.py ~/Documents</code> pour le tien.</span>
-  <a href="https://github.com/antoine123456/dirstat">Code sur GitHub</a>
-</div>"""
-assert s.count("</style>") == 1 and s.count("<body>") == 1
-s = s.replace("</style>", css, 1).replace("<body>", banner, 1)
-s = s.replace("<title>DirStat – Projets</title>", "<title>dirstat – démo en ligne</title>")
+parts = {
+    '<span class="sub" id="sub"></span>':
+        '<span class="sub" id="sub">démo · scan d\'un dossier d\'exemple · lance '
+        '<code>python3 dirstat.py ~/Documents</code> pour le tien</span>',
+    '<nav class="links"></nav>':
+        '<nav class="links">\n    <a href="https://github.com/antoine123456/dirstat">dépôt ↗</a>\n'
+        '    <a href="https://antoine123456.github.io/">← antoine123456</a>\n  </nav>',
+    '<footer class="note"></footer>':
+        '<footer class="note">Les fichiers de l\'exemple sont fictifs (créés par docs/make_demo.sh). '
+        'Tout se passe dans ton navigateur. Sur ton Mac : <code>python3 dirstat.py ~/Documents</code> '
+        'écrit et ouvre la même page pour ton dossier.</footer>',
+    '<title>dirstat · Projets</title>': '<title>dirstat · démo</title>',
+}
+for old, new in parts.items():
+    assert s.count(old) == 1, old
+    s = s.replace(old, new)
 open(p, "w", encoding="utf-8").write(s)
 PY
 

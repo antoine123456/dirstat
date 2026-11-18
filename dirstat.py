@@ -104,86 +104,137 @@ TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DirStat – __TITLE__</title>
+<title>dirstat · __TITLE__</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231e1f22'/%3E%3Crect x='2' y='2' width='6.5' height='12' fill='%234f8ff7'/%3E%3Crect x='9.5' y='2' width='4.5' height='6.5' fill='%233fa45b'/%3E%3Crect x='9.5' y='9.5' width='2' height='4.5' fill='%23d7a700'/%3E%3Crect x='12' y='9.5' width='2' height='4.5' fill='%23c065c9'/%3E%3C/svg%3E">
 <style>
-  :root { --bg:#0b0b0c; --panel:#131316; --fg:#e9e9ea; --dim:#8b8b90; --line:#2a2a2e; --acc:#4c9aff; }
-  * { box-sizing:border-box; }
-  html,body { height:100%; margin:0; background:var(--bg); color:var(--fg);
-    font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif; }
-  body { display:flex; flex-direction:column; }
-  header { flex:none; display:flex; align-items:center; gap:12px; padding:8px 12px;
-    border-bottom:1px solid var(--line); min-height:42px; }
-  #crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:2px; font-size:14px; min-width:0; }
-  #crumbs button { background:none; border:0; color:var(--acc); font:inherit; cursor:pointer;
-    padding:2px 5px; border-radius:4px; }
-  #crumbs button:hover { background:#1c1c20; }
-  #crumbs button:focus-visible, .row:focus-visible, #up:focus-visible { outline:2px solid var(--acc); outline-offset:1px; }
-  #crumbs .cur { color:var(--fg); font-weight:600; padding:2px 5px; }
-  #crumbs .sep { color:var(--dim); }
-  #up { background:#1c1c20; color:var(--fg); border:1px solid var(--line); border-radius:6px;
-    padding:4px 10px; font:inherit; cursor:pointer; }
-  #up:disabled { opacity:.35; cursor:default; }
-  #info { margin-left:auto; color:var(--dim); white-space:nowrap; font-variant-numeric:tabular-nums; }
-  main { flex:1; display:flex; min-height:0; }
-  #map { flex:1; position:relative; min-width:0; cursor:pointer; touch-action:manipulation;
-    -webkit-tap-highlight-color:transparent; }
-  #map canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
-  #over { pointer-events:none; }
-  aside { flex:none; width:320px; border-left:1px solid var(--line); background:var(--panel);
-    display:flex; flex-direction:column; min-height:0; }
-  aside section { display:flex; flex-direction:column; min-height:0; flex:1; }
-  aside section + section { border-top:1px solid var(--line); }
-  aside h2 { flex:none; margin:0; padding:8px 12px 6px; font-size:11px; font-weight:600;
-    letter-spacing:.06em; text-transform:uppercase; color:var(--dim); }
-  .list { overflow:auto; flex:1; padding-bottom:6px; }
-  .row { position:relative; display:flex; align-items:center; gap:8px; width:100%; padding:3px 12px;
-    background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:default; }
-  button.row { cursor:pointer; }
-  .row:hover, .row.on { background:#1f1f24; }
-  .row .bar { position:absolute; left:0; top:0; bottom:0; background:rgba(76,154,255,.13); pointer-events:none; }
-  .row .sw { flex:none; width:11px; height:11px; border-radius:2px; }
-  .row .nm { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; position:relative; }
-  .row .sz { flex:none; white-space:nowrap; color:var(--dim); font-variant-numeric:tabular-nums; position:relative; }
-  .row .pc { flex:none; width:54px; white-space:nowrap; text-align:right; color:var(--dim); font-variant-numeric:tabular-nums; position:relative; }
-  .row.dim { opacity:.4; }
-  #tip { position:fixed; z-index:10; display:none; pointer-events:none; max-width:420px;
-    background:#26262b; border:1px solid #3a3a40; border-radius:8px; padding:7px 10px;
-    box-shadow:0 6px 20px rgba(0,0,0,.5); }
-  #tip b { display:block; word-break:break-all; }
-  #tip .s { font-variant-numeric:tabular-nums; }
-  #tip .p { color:var(--dim); font-size:12px; word-break:break-all; }
-  footer { flex:none; padding:5px 12px; border-top:1px solid var(--line); color:var(--dim);
-    font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:27px; }
-  @media (max-width: 720px) {
-    header { flex-wrap:wrap; gap:2px 10px; padding:4px 8px; min-height:0; }
-    #up { padding:3px 8px; }
-    #info { margin-left:0; width:100%; order:3; font-size:12px; white-space:normal; }
-    main { flex-direction:column; }
-    #map { min-height:0; }
-    aside { width:auto; height:30vh; border-left:0; border-top:1px solid var(--line); flex-direction:row; }
-    aside section + section { border-top:0; border-left:1px solid var(--line); }
-    aside section { min-width:0; }
-    .row { padding:5px 8px; gap:6px; }
-    .row .pc { display:none; }
-    #tip { max-width:calc(100vw - 16px); }
-    footer { white-space:normal; }
+:root {
+  --bg: #fbfbfa; --fg: #24292f; --muted: #8a8f98; --line: #d0d4da; --accent: #9b59b6;
+  --sel-bg: #4f8ff7; --sel-fg: #ffffff; --panel: #f0f1f3; --chip: #2a8fa8; --dir: #b4b9c1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1e1f22; --fg: #d8dadf; --muted: #7d828c; --line: #3a3d44; --accent: #c678dd;
+    --sel-bg: #3d6fd1; --sel-fg: #ffffff; --panel: #26282c; --chip: #56b6c2; --dir: #4a4e56;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #1e1f22; --fg: #d8dadf; --muted: #7d828c; --line: #3a3d44; --accent: #c678dd;
+  --sel-bg: #3d6fd1; --sel-fg: #ffffff; --panel: #26282c; --chip: #56b6c2; --dir: #4a4e56;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 14px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+a { color: inherit; }
+code { font: inherit; }
+header.top { display: flex; align-items: center; gap: 12px; padding: 8px 16px 4px; flex-wrap: wrap; }
+header.top h1 { font-size: 14px; margin: 0; font-weight: 700; }
+header.top .sub { color: var(--muted); min-width: 0; }
+header.top .links { margin-left: auto; display: flex; gap: 14px; }
+header.top .links:empty { display: none; }
+header.top .links a { color: var(--muted); text-decoration: none; }
+header.top .links a:hover { color: var(--fg); text-decoration: underline; }
+main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 30%); gap: 12px; padding: 4px 16px 0; min-height: 0; }
+.term, .side { display: flex; flex-direction: column; min-height: 0; min-width: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.bar { flex: none; display: flex; align-items: center; gap: 10px; padding: 2px 8px; color: var(--muted); background: var(--panel);
+  white-space: nowrap; overflow: hidden; }
+button {
+  font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+  padding: 1px 8px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#up { flex: none; background: var(--bg); }
+#up:disabled { opacity: .45; cursor: default; border-color: var(--line); }
+#crumbs { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
+#crumbs button { background: none; border: 0; color: var(--sel-bg); padding: 0 3px; }
+#crumbs button:hover { text-decoration: underline; }
+#crumbs .cur { color: var(--fg); font-weight: 700; padding: 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#crumbs .sep { color: var(--muted); }
+#info { margin-left: auto; flex: none; font-variant-numeric: tabular-nums; }
+#map { flex: 1; position: relative; min-height: 0; margin: 6px; cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; border-radius: 3px; overflow: hidden; }
+#map canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#over { pointer-events: none; }
+.detail { flex: none; padding: 2px 8px; min-height: 1.45em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.detail .m { color: var(--muted); }
+.keys { flex: none; padding: 2px 8px 4px; display: flex; flex-wrap: wrap; gap: 0 14px; }
+.keys b { color: var(--accent); }
+.side section { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.side section + section { border-top: 1px solid var(--line); }
+.side h2 { font: inherit; margin: 0; }
+.list { overflow: auto; flex: 1; padding: 2px 0 6px; }
+.row { position: relative; display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 8px; min-height: 1.45em;
+  background: none; border: 0; border-radius: 0; color: inherit; font: inherit; text-align: left; cursor: default; }
+button.row { cursor: pointer; }
+button.row:hover { border-color: transparent; }
+.row:hover { background: color-mix(in srgb, var(--sel-bg) 12%, transparent); }
+.row.on { background: var(--sel-bg); color: var(--sel-fg); }
+.row.on .sz, .row.on .pc { color: var(--sel-fg); }
+.row .bar { position: absolute; left: 0; top: 0; bottom: 0; padding: 0; background: color-mix(in srgb, var(--sel-bg) 14%, transparent); pointer-events: none; }
+.row.on .bar { display: none; }
+.row .sw { flex: none; width: 0.6em; align-self: stretch; position: relative; }
+.row .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; }
+.row .sz { flex: none; white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; position: relative; }
+.row .pc { flex: none; width: 6ch; white-space: nowrap; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; position: relative; }
+.row.dim { opacity: .4; }
+#tip { position: fixed; z-index: 10; display: none; pointer-events: none; max-width: 440px;
+  background: var(--bg); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+#tip b { display: block; word-break: break-all; }
+#tip .s { font-variant-numeric: tabular-nums; }
+#tip .p { color: var(--muted); font-size: 12px; word-break: break-all; }
+footer.note { color: var(--muted); padding: 6px 16px 10px; font-size: 12px; }
+footer.note:empty { display: none; }
+@media (max-width: 900px) {
+  main { grid-template-columns: minmax(0, 1fr) minmax(240px, 36%); }
+  .row .pc { display: none; }
+}
+@media (max-width: 640px) {
+  header.top { padding: 6px 10px 2px; gap: 2px 12px; }
+  header.top .links { margin-left: 0; }
+  body { font-size: 13px; }
+  main { flex: none; display: flex; flex-direction: column; gap: 8px; padding: 4px 10px 0; }   /* la page défile */
+  .term { flex: none; }
+  #map { flex: none; height: 62vh; height: 62svh; }
+  .side { flex: none; height: 42vh; flex-direction: row; }
+  .side section + section { border-top: 0; border-left: 1px solid var(--line); }
+  .side section { min-width: 0; }
+  .side .bar { padding: 2px 6px; }
+  .row { padding: 2px 6px; gap: 6px; }
+  #map { margin: 4px; }
+  .keys { display: none; }
+  #tip { max-width: calc(100vw - 16px); }
+  footer.note { padding: 6px 10px 8px; }
+}
 </style>
 </head>
 <body>
-<header>
-  <button id="up" title="Dossier parent (Échap)">↑ Parent</button>
-  <nav id="crumbs" aria-label="Chemin"></nav>
-  <span id="info"></span>
+<header class="top">
+  <h1>dirstat</h1>
+  <span class="sub" id="sub"></span>
+  <nav class="links"></nav>
 </header>
 <main>
-  <div id="map"><canvas id="cv"></canvas><canvas id="over"></canvas></div>
-  <aside>
-    <section><h2 id="hContent">Contenu</h2><div class="list" id="content"></div></section>
-    <section><h2>Types de fichiers</h2><div class="list" id="types"></div></section>
+  <section class="term" aria-label="Carte">
+    <div class="bar">
+      <button id="up" title="Dossier parent (Échap)">↑ parent</button>
+      <nav id="crumbs" aria-label="Chemin"></nav>
+      <span id="info"></span>
+    </div>
+    <div id="map"><canvas id="cv"></canvas><canvas id="over"></canvas></div>
+    <div class="detail" id="status"></div>
+    <div class="keys" id="keys"><span><b>survol</b> identifier</span><span><b>clic</b> entrer</span><span><b>Échap</b> remonter</span><span><b>T</b> thème</span></div>
+  </section>
+  <aside class="side">
+    <section><h2 class="bar" id="hContent">Contenu</h2><div class="list" id="content"></div></section>
+    <section><h2 class="bar">Types de fichiers</h2><div class="list" id="types"></div></section>
   </aside>
 </main>
-<footer id="status">Survolez la carte · clic : entrer dans un dossier · Échap : remonter</footer>
+<footer class="note"></footer>
 <div id="tip"></div>
 
 <script>
@@ -223,9 +274,11 @@ const pct = (a, b) => b ? fmtNum.format(100 * a / b) + ' %' : '';
 function pathOf(n) { const p = []; for (; n; n = n.p) p.unshift(n.n); return p.join('/'); }
 
 // ---------- Types / couleurs ----------
-const PALETTE = ['#4c9aff', '#ff5c5c', '#3ecf8e', '#f5c542', '#b07cff', '#ff8a3d',
-                 '#2fd3d3', '#ff6fb5', '#9bd13d', '#8892ff', '#c9a27a'];
-const OTHER = '#6b6b73', DIRCOL = '#4a4a52';
+// mêmes teintes que kanban-terminal
+const PALETTE = ['#4f8ff7', '#e06c75', '#3fa45b', '#d7a700', '#c065c9', '#e5843a',
+                 '#56b6c2', '#d6609a', '#8db33a', '#7b83eb', '#b08f6a'];
+const OTHER = '#8a8f98';
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const exts = new Map();
 (function walk(n) {
   if (n.c) { n.c.forEach(walk); return; }
@@ -246,11 +299,11 @@ function shade(col) {
   if (!s) { s = [mix(col, .28), col, mix(col, -.38)]; shades.set(col, s); }
   return s;
 }
-const colOf = n => n.c ? DIRCOL : exts.get(n.e).col;
+const colOf = n => n.c ? css('--dir') : exts.get(n.e).col;
 let filter = null; // extension mise en évidence
 
 // ---------- Mise en page (treemap « squarified ») ----------
-let gen = 0, W = 0, H = 0;
+let gen = 0, W = 0, H = 0, BG = '#1e1f22', FG = '#d8dadf';
 function layout(n, x, y, w, h) {
   n.x = x; n.y = y; n.w = w; n.h = h; n.g = gen; n.r = false;
   if (!n.c || w < 3 || h < 3 || !n.s) return;
@@ -301,7 +354,7 @@ function draw(n, depth) {
     for (const k of n.c) { if (k.g !== gen) break; draw(k, depth + 1); }
     if (depth === 1 || depth === 2) {
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = depth === 1 ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.45)';
+      ctx.strokeStyle = depth === 1 ? BG : 'rgba(0,0,0,.35)';
       ctx.lineWidth = depth === 1 ? 2 : 1;
       ctx.strokeRect(n.x, n.y, n.w, n.h);
     }
@@ -314,7 +367,8 @@ function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); octx.setTransform(dpr, 0, 0, dpr, 0, 0);
   gen++;
   layout(view, 0, 0, W, H);
-  ctx.globalAlpha = 1; ctx.fillStyle = '#0b0b0c'; ctx.fillRect(0, 0, W, H);
+  BG = css('--bg'); FG = css('--fg');
+  ctx.globalAlpha = 1; ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
   draw(view, 0);
   ctx.globalAlpha = 1;
   drawOver();
@@ -343,11 +397,11 @@ function outline(n, col, lw) {
 }
 function drawOver() {
   octx.clearRect(0, 0, W, H);
-  if (sideHover) { outline(sideHover, '#fff', 2); return; }
+  if (sideHover) { outline(sideHover, FG, 2); return; }
   if (!hover) return;
   const t = topOf(hover);
-  if (t && t !== hover) outline(t, 'rgba(255,255,255,.55)', 1.5);
-  outline(hover, '#fff', 2);
+  if (t && t !== hover) { octx.globalAlpha = .55; outline(t, FG, 1.5); octx.globalAlpha = 1; }
+  outline(hover, FG, 2);
 }
 const tip = document.getElementById('tip'), status = document.getElementById('status');
 function showTip(n, ev) {
@@ -364,8 +418,8 @@ function showTip(n, ev) {
   if (y + th > innerHeight - 6) y = ev.clientY - th - 10;
   tip.style.left = Math.max(4, x) + 'px'; tip.style.top = Math.max(4, y) + 'px';
 }
-const TOUCH_STATUS = 'Touchez la carte pour identifier · touchez à nouveau pour entrer · ↑ Parent pour remonter';
-const DEFAULT_STATUS = matchMedia('(hover: none)').matches ? TOUCH_STATUS : status.textContent;
+const TOUCH_STATUS = 'toucher : identifier · toucher à nouveau : entrer · ↑ parent : remonter';
+const DEFAULT_STATUS = matchMedia('(hover: none)').matches ? TOUCH_STATUS : ''; // à la souris, la ligne des touches suffit
 status.textContent = DEFAULT_STATUS;
 function nodeAt(ev) {
   const r = map.getBoundingClientRect();
@@ -373,7 +427,7 @@ function nodeAt(ev) {
 }
 function point(n, ev) { // met en évidence n (survol à la souris, premier toucher au doigt)
   if (n !== hover) { hover = n; drawOver(); markRow(); }
-  if (n) { showTip(n, ev); status.textContent = pathOf(n) + '  —  ' + fmt(n.s); }
+  if (n) { showTip(n, ev); status.textContent = pathOf(n) + ' · ' + fmt(n.s); }
   else { tip.style.display = 'none'; status.textContent = DEFAULT_STATUS; }
 }
 function unpoint() {
@@ -406,8 +460,19 @@ function go(n) {
 }
 document.getElementById('up').onclick = () => { if (view.p) go(view.p); };
 addEventListener('keydown', ev => {
+  if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
   if ((ev.key === 'Escape' || ev.key === 'Backspace') && view.p) { ev.preventDefault(); go(view.p); }
+  else if (ev.key === 'T') toggleTheme();
 });
+function toggleTheme() { // comme kanban-terminal : clair / sombre, sinon celui du système
+  const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+  render(); renderContent(); renderTypes();
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { render(); renderContent(); renderTypes(); });
+const sub = document.getElementById('sub');
+if (!sub.textContent.trim()) sub.textContent = 'carte de « ' + META.name + ' » · ' + fmt(root.s) + ' · ' +
+  META.files.toLocaleString('fr-FR') + ' fichiers · ' + META.date;
 function renderCrumbs() {
   const el = document.getElementById('crumbs'); el.textContent = '';
   const chain = []; for (let n = view; n; n = n.p) chain.unshift(n);
@@ -417,8 +482,7 @@ function renderCrumbs() {
     else { const b = document.createElement('button'); b.textContent = n.n; b.onclick = () => go(n); el.append(b); }
   });
   document.getElementById('up').disabled = !view.p;
-  document.getElementById('info').textContent = fmt(view.s) +
-    (view === root ? ' · ' + META.files.toLocaleString('fr-FR') + ' fichiers · ' + META.date : ' · ' + pct(view.s, root.s) + ' du total');
+  document.getElementById('info').textContent = fmt(view.s) + (view === root ? '' : ' · ' + pct(view.s, root.s));
 }
 
 // ---------- Panneau latéral ----------
@@ -447,7 +511,7 @@ function renderContent() {
     rowOf.set(n, r); el.append(r);
   });
   if (view.c.length > MAXROWS) {
-    const more = document.createElement('div'); more.className = 'row'; more.style.color = 'var(--dim)';
+    const more = document.createElement('div'); more.className = 'row'; more.style.color = 'var(--muted)';
     more.textContent = '… et ' + (view.c.length - MAXROWS) + ' autres éléments';
     el.append(more);
   }

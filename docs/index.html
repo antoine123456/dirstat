@@ -3,105 +3,145 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>dirstat – démo en ligne</title>
+<title>dirstat · démo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231e1f22'/%3E%3Crect x='2' y='2' width='6.5' height='12' fill='%234f8ff7'/%3E%3Crect x='9.5' y='2' width='4.5' height='6.5' fill='%233fa45b'/%3E%3Crect x='9.5' y='9.5' width='2' height='4.5' fill='%23d7a700'/%3E%3Crect x='12' y='9.5' width='2' height='4.5' fill='%23c065c9'/%3E%3C/svg%3E">
 <style>
-  :root { --bg:#0b0b0c; --panel:#131316; --fg:#e9e9ea; --dim:#8b8b90; --line:#2a2a2e; --acc:#4c9aff; }
-  * { box-sizing:border-box; }
-  html,body { height:100%; margin:0; background:var(--bg); color:var(--fg);
-    font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif; }
-  body { display:flex; flex-direction:column; }
-  header { flex:none; display:flex; align-items:center; gap:12px; padding:8px 12px;
-    border-bottom:1px solid var(--line); min-height:42px; }
-  #crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:2px; font-size:14px; min-width:0; }
-  #crumbs button { background:none; border:0; color:var(--acc); font:inherit; cursor:pointer;
-    padding:2px 5px; border-radius:4px; }
-  #crumbs button:hover { background:#1c1c20; }
-  #crumbs button:focus-visible, .row:focus-visible, #up:focus-visible { outline:2px solid var(--acc); outline-offset:1px; }
-  #crumbs .cur { color:var(--fg); font-weight:600; padding:2px 5px; }
-  #crumbs .sep { color:var(--dim); }
-  #up { background:#1c1c20; color:var(--fg); border:1px solid var(--line); border-radius:6px;
-    padding:4px 10px; font:inherit; cursor:pointer; }
-  #up:disabled { opacity:.35; cursor:default; }
-  #info { margin-left:auto; color:var(--dim); white-space:nowrap; font-variant-numeric:tabular-nums; }
-  main { flex:1; display:flex; min-height:0; }
-  #map { flex:1; position:relative; min-width:0; cursor:pointer; touch-action:manipulation;
-    -webkit-tap-highlight-color:transparent; }
-  #map canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
-  #over { pointer-events:none; }
-  aside { flex:none; width:320px; border-left:1px solid var(--line); background:var(--panel);
-    display:flex; flex-direction:column; min-height:0; }
-  aside section { display:flex; flex-direction:column; min-height:0; flex:1; }
-  aside section + section { border-top:1px solid var(--line); }
-  aside h2 { flex:none; margin:0; padding:8px 12px 6px; font-size:11px; font-weight:600;
-    letter-spacing:.06em; text-transform:uppercase; color:var(--dim); }
-  .list { overflow:auto; flex:1; padding-bottom:6px; }
-  .row { position:relative; display:flex; align-items:center; gap:8px; width:100%; padding:3px 12px;
-    background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:default; }
-  button.row { cursor:pointer; }
-  .row:hover, .row.on { background:#1f1f24; }
-  .row .bar { position:absolute; left:0; top:0; bottom:0; background:rgba(76,154,255,.13); pointer-events:none; }
-  .row .sw { flex:none; width:11px; height:11px; border-radius:2px; }
-  .row .nm { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; position:relative; }
-  .row .sz { flex:none; white-space:nowrap; color:var(--dim); font-variant-numeric:tabular-nums; position:relative; }
-  .row .pc { flex:none; width:54px; white-space:nowrap; text-align:right; color:var(--dim); font-variant-numeric:tabular-nums; position:relative; }
-  .row.dim { opacity:.4; }
-  #tip { position:fixed; z-index:10; display:none; pointer-events:none; max-width:420px;
-    background:#26262b; border:1px solid #3a3a40; border-radius:8px; padding:7px 10px;
-    box-shadow:0 6px 20px rgba(0,0,0,.5); }
-  #tip b { display:block; word-break:break-all; }
-  #tip .s { font-variant-numeric:tabular-nums; }
-  #tip .p { color:var(--dim); font-size:12px; word-break:break-all; }
-  footer { flex:none; padding:5px 12px; border-top:1px solid var(--line); color:var(--dim);
-    font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:27px; }
-  @media (max-width: 720px) {
-    header { flex-wrap:wrap; gap:2px 10px; padding:4px 8px; min-height:0; }
-    #up { padding:3px 8px; }
-    #info { margin-left:0; width:100%; order:3; font-size:12px; white-space:normal; }
-    main { flex-direction:column; }
-    #map { min-height:0; }
-    aside { width:auto; height:30vh; border-left:0; border-top:1px solid var(--line); flex-direction:row; }
-    aside section + section { border-top:0; border-left:1px solid var(--line); }
-    aside section { min-width:0; }
-    .row { padding:5px 8px; gap:6px; }
-    .row .pc { display:none; }
-    #tip { max-width:calc(100vw - 16px); }
-    footer { white-space:normal; }
+:root {
+  --bg: #fbfbfa; --fg: #24292f; --muted: #8a8f98; --line: #d0d4da; --accent: #9b59b6;
+  --sel-bg: #4f8ff7; --sel-fg: #ffffff; --panel: #f0f1f3; --chip: #2a8fa8; --dir: #b4b9c1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1e1f22; --fg: #d8dadf; --muted: #7d828c; --line: #3a3d44; --accent: #c678dd;
+    --sel-bg: #3d6fd1; --sel-fg: #ffffff; --panel: #26282c; --chip: #56b6c2; --dir: #4a4e56;
   }
-  #demo { flex:none; display:flex; align-items:center; gap:14px; padding:6px 12px;
-    background:#16243a; border-bottom:1px solid #24395a; color:#b9c7dc; font-size:12.5px; }
-  #demo a { color:#8fbfff; text-decoration:none; white-space:nowrap; }
-  #demo a:hover { text-decoration:underline; }
-  #demo code { background:rgba(255,255,255,.08); border-radius:4px; padding:1px 5px;
-    font:12px ui-monospace,SFMono-Regular,Menlo,monospace; color:#e9e9ea; white-space:nowrap; }
-  #demo .msg { flex:1; min-width:0; }
-  @media (max-width: 720px) { #demo { flex-wrap:wrap; gap:4px 12px; padding:6px 8px; font-size:12px; }
-    #demo .msg { order:3; flex-basis:100%; } }
+}
+:root[data-theme="dark"] {
+  --bg: #1e1f22; --fg: #d8dadf; --muted: #7d828c; --line: #3a3d44; --accent: #c678dd;
+  --sel-bg: #3d6fd1; --sel-fg: #ffffff; --panel: #26282c; --chip: #56b6c2; --dir: #4a4e56;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 14px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+a { color: inherit; }
+code { font: inherit; }
+header.top { display: flex; align-items: center; gap: 12px; padding: 8px 16px 4px; flex-wrap: wrap; }
+header.top h1 { font-size: 14px; margin: 0; font-weight: 700; }
+header.top .sub { color: var(--muted); min-width: 0; }
+header.top .links { margin-left: auto; display: flex; gap: 14px; }
+header.top .links:empty { display: none; }
+header.top .links a { color: var(--muted); text-decoration: none; }
+header.top .links a:hover { color: var(--fg); text-decoration: underline; }
+main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 30%); gap: 12px; padding: 4px 16px 0; min-height: 0; }
+.term, .side { display: flex; flex-direction: column; min-height: 0; min-width: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.bar { flex: none; display: flex; align-items: center; gap: 10px; padding: 2px 8px; color: var(--muted); background: var(--panel);
+  white-space: nowrap; overflow: hidden; }
+button {
+  font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+  padding: 1px 8px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#up { flex: none; background: var(--bg); }
+#up:disabled { opacity: .45; cursor: default; border-color: var(--line); }
+#crumbs { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
+#crumbs button { background: none; border: 0; color: var(--sel-bg); padding: 0 3px; }
+#crumbs button:hover { text-decoration: underline; }
+#crumbs .cur { color: var(--fg); font-weight: 700; padding: 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#crumbs .sep { color: var(--muted); }
+#info { margin-left: auto; flex: none; font-variant-numeric: tabular-nums; }
+#map { flex: 1; position: relative; min-height: 0; margin: 6px; cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; border-radius: 3px; overflow: hidden; }
+#map canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#over { pointer-events: none; }
+.detail { flex: none; padding: 2px 8px; min-height: 1.45em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.detail .m { color: var(--muted); }
+.keys { flex: none; padding: 2px 8px 4px; display: flex; flex-wrap: wrap; gap: 0 14px; }
+.keys b { color: var(--accent); }
+.side section { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.side section + section { border-top: 1px solid var(--line); }
+.side h2 { font: inherit; margin: 0; }
+.list { overflow: auto; flex: 1; padding: 2px 0 6px; }
+.row { position: relative; display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 8px; min-height: 1.45em;
+  background: none; border: 0; border-radius: 0; color: inherit; font: inherit; text-align: left; cursor: default; }
+button.row { cursor: pointer; }
+button.row:hover { border-color: transparent; }
+.row:hover { background: color-mix(in srgb, var(--sel-bg) 12%, transparent); }
+.row.on { background: var(--sel-bg); color: var(--sel-fg); }
+.row.on .sz, .row.on .pc { color: var(--sel-fg); }
+.row .bar { position: absolute; left: 0; top: 0; bottom: 0; padding: 0; background: color-mix(in srgb, var(--sel-bg) 14%, transparent); pointer-events: none; }
+.row.on .bar { display: none; }
+.row .sw { flex: none; width: 0.6em; align-self: stretch; position: relative; }
+.row .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; }
+.row .sz { flex: none; white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; position: relative; }
+.row .pc { flex: none; width: 6ch; white-space: nowrap; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; position: relative; }
+.row.dim { opacity: .4; }
+#tip { position: fixed; z-index: 10; display: none; pointer-events: none; max-width: 440px;
+  background: var(--bg); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+#tip b { display: block; word-break: break-all; }
+#tip .s { font-variant-numeric: tabular-nums; }
+#tip .p { color: var(--muted); font-size: 12px; word-break: break-all; }
+footer.note { color: var(--muted); padding: 6px 16px 10px; font-size: 12px; }
+footer.note:empty { display: none; }
+@media (max-width: 900px) {
+  main { grid-template-columns: minmax(0, 1fr) minmax(240px, 36%); }
+  .row .pc { display: none; }
+}
+@media (max-width: 640px) {
+  header.top { padding: 6px 10px 2px; gap: 2px 12px; }
+  header.top .links { margin-left: 0; }
+  body { font-size: 13px; }
+  main { flex: none; display: flex; flex-direction: column; gap: 8px; padding: 4px 10px 0; }   /* la page défile */
+  .term { flex: none; }
+  #map { flex: none; height: 62vh; height: 62svh; }
+  .side { flex: none; height: 42vh; flex-direction: row; }
+  .side section + section { border-top: 0; border-left: 1px solid var(--line); }
+  .side section { min-width: 0; }
+  .side .bar { padding: 2px 6px; }
+  .row { padding: 2px 6px; gap: 6px; }
+  #map { margin: 4px; }
+  .keys { display: none; }
+  #tip { max-width: calc(100vw - 16px); }
+  footer.note { padding: 6px 10px 8px; }
+}
 </style>
 </head>
 <body>
-<div id="demo">
-  <a href="https://antoine123456.github.io/">← antoine123456</a>
-  <span class="msg">Démo de dirstat, scan d'un dossier d'exemple. Lance <code>python3 dirstat.py ~/Documents</code> pour le tien.</span>
-  <a href="https://github.com/antoine123456/dirstat">Code sur GitHub</a>
-</div>
-<header>
-  <button id="up" title="Dossier parent (Échap)">↑ Parent</button>
-  <nav id="crumbs" aria-label="Chemin"></nav>
-  <span id="info"></span>
+<header class="top">
+  <h1>dirstat</h1>
+  <span class="sub" id="sub">démo · scan d'un dossier d'exemple · lance <code>python3 dirstat.py ~/Documents</code> pour le tien</span>
+  <nav class="links">
+    <a href="https://github.com/antoine123456/dirstat">dépôt ↗</a>
+    <a href="https://antoine123456.github.io/">← antoine123456</a>
+  </nav>
 </header>
 <main>
-  <div id="map"><canvas id="cv"></canvas><canvas id="over"></canvas></div>
-  <aside>
-    <section><h2 id="hContent">Contenu</h2><div class="list" id="content"></div></section>
-    <section><h2>Types de fichiers</h2><div class="list" id="types"></div></section>
+  <section class="term" aria-label="Carte">
+    <div class="bar">
+      <button id="up" title="Dossier parent (Échap)">↑ parent</button>
+      <nav id="crumbs" aria-label="Chemin"></nav>
+      <span id="info"></span>
+    </div>
+    <div id="map"><canvas id="cv"></canvas><canvas id="over"></canvas></div>
+    <div class="detail" id="status"></div>
+    <div class="keys" id="keys"><span><b>survol</b> identifier</span><span><b>clic</b> entrer</span><span><b>Échap</b> remonter</span><span><b>T</b> thème</span></div>
+  </section>
+  <aside class="side">
+    <section><h2 class="bar" id="hContent">Contenu</h2><div class="list" id="content"></div></section>
+    <section><h2 class="bar">Types de fichiers</h2><div class="list" id="types"></div></section>
   </aside>
 </main>
-<footer id="status">Survolez la carte · clic : entrer dans un dossier · Échap : remonter</footer>
+<footer class="note">Les fichiers de l'exemple sont fictifs (créés par docs/make_demo.sh). Tout se passe dans ton navigateur. Sur ton Mac : <code>python3 dirstat.py ~/Documents</code> écrit et ouvre la même page pour ton dossier.</footer>
 <div id="tip"></div>
 
 <script>
 const RAW = ["Projets",[["Photos",[["2025-ete-Bretagne",[["IMG_2232.HEIC",3877725],["IMG_2179.HEIC",3093010],["IMG_2199.HEIC",2654974],["IMG_2217.HEIC",1837887],["IMG_2218.HEIC",1800577],["IMG_2141.HEIC",2939987],["IMG_2106.HEIC",2402868],["IMG_2209.HEIC",3093694],["IMG_2205.HEIC",3022885],["IMG_2203.HEIC",3919726],["IMG_2103.HEIC",3181921],["IMG_2154.HEIC",3093812],["IMG_2187.HEIC",3037214],["IMG_2101.HEIC",2121623],["IMG_2167.HEIC",4191987],["IMG_2306.MOV",416856295],["IMG_2236.HEIC",2164134],["IMG_2119.HEIC",3014068],["IMG_2121.HEIC",3649980],["IMG_2131.HEIC",2719065],["IMG_2165.HEIC",3101705],["IMG_2125.HEIC",4445763],["IMG_2226.HEIC",4382190],["IMG_2159.HEIC",1931996],["IMG_2174.HEIC",3311449],["IMG_2216.HEIC",3013365],["IMG_2308.MOV",220695268],["IMG_2126.HEIC",4309156],["IMG_2195.HEIC",3981490],["IMG_2134.HEIC",3035109],["IMG_2114.HEIC",3383606],["IMG_2169.HEIC",3033350],["IMG_2120.HEIC",3999859],["IMG_2238.HEIC",3387423],["IMG_2192.HEIC",3111036],["IMG_2229.HEIC",2217854],["IMG_2166.HEIC",2418103],["IMG_2239.HEIC",4387349],["IMG_2164.HEIC",3069108],["IMG_2307.MOV",179341687],["IMG_2140.HEIC",2781564],["IMG_2118.HEIC",4005255],["IMG_2185.HEIC",3570235],["IMG_2301.MOV",256841342],["IMG_2152.HEIC",2933908],["IMG_2144.HEIC",3145828],["IMG_2186.HEIC",3412637],["IMG_2201.HEIC",2065609],["IMG_2211.HEIC",2519458],["IMG_2162.HEIC",2076956],["IMG_2219.HEIC",3367727],["IMG_2153.HEIC",4300829],["IMG_2163.HEIC",3480236],["IMG_2210.HEIC",1973596],["IMG_2180.HEIC",4188015],["IMG_2191.HEIC",2502298],["IMG_2132.HEIC",3305116],["IMG_2111.HEIC",3772455],["IMG_2309.MOV",375118047],["IMG_2110.HEIC",3279090],["IMG_2204.HEIC",3190967],["IMG_2157.HEIC",2406217],["IMG_2231.HEIC",3374276],["IMG_2175.HEIC",3608335],["IMG_2198.HEIC",4044787],["IMG_2197.HEIC",4249618],["IMG_2104.HEIC",4122001],["IMG_2235.HEIC",3745276],["IMG_2102.HEIC",3156792],["IMG_2237.HEIC",2401904],["IMG_2137.HEIC",3359043],["IMG_2108.HEIC",3302709],["IMG_2112.HEIC",3873911],["IMG_2178.HEIC",3155128],["IMG_2303.MOV",320736400],["IMG_2139.HEIC",3719328],["IMG_2220.HEIC",4316881],["IMG_2146.HEIC",3167168],["IMG_2107.HEIC",3422782],["IMG_2105.HEIC",2077119],["IMG_2240.HEIC",4165183],["IMG_2215.HEIC",2910539],["IMG_2122.HEIC",3634350],["IMG_2130.HEIC",2006063],["IMG_2189.HEIC",3121697],["IMG_2176.HEIC",2630593],["IMG_2138.HEIC",1866796],["IMG_2222.HEIC",3943180],["IMG_2117.HEIC",2098988],["IMG_2228.HEIC",3515602],["IMG_2171.HEIC",4309554],["IMG_2109.HEIC",3915108],["IMG_2190.HEIC",4288076],["IMG_2302.MOV",92928951],["IMG_2128.HEIC",4499071],["IMG_2161.HEIC",4194426],["IMG_2150.HEIC",4275237],["IMG_2156.HEIC",1868515],["IMG_2233.HEIC",4364826],["IMG_2200.HEIC",4275391],["IMG_2230.HEIC",2646295],["IMG_2206.HEIC",4406224],["IMG_2145.HEIC",2114409],["IMG_2208.HEIC",4074587],["IMG_2135.HEIC",4166481],["IMG_2149.HEIC",3125782],["IMG_2160.HEIC",3702589],["IMG_2170.HEIC",3067396],["IMG_2142.HEIC",2876687],["IMG_2181.HEIC",2969280],["IMG_2182.HEIC",2594810],["IMG_2207.HEIC",4411623],["IMG_2168.HEIC",3492010],["IMG_2223.HEIC",2469161],["IMG_2212.HEIC",3145736],["IMG_2183.HEIC",2526397],["IMG_2196.HEIC",3306162],["IMG_2305.MOV",365540803],["IMG_2214.HEIC",3818388],["IMG_2115.HEIC",2447822],["IMG_2224.HEIC",3476901],["IMG_2194.HEIC",4030668],["IMG_2213.HEIC",2060988],["IMG_2155.HEIC",3198565],["IMG_2177.HEIC",3959465],["IMG_2188.HEIC",3211799],["IMG_2136.HEIC",3700733],["IMG_2227.HEIC",3604888],["IMG_2202.HEIC",3661199],["IMG_2147.HEIC",3825396],["IMG_2113.HEIC",3827770],["IMG_2172.HEIC",4465509],["IMG_2151.HEIC",2498337],["IMG_2129.HEIC",3186686],["IMG_2143.HEIC",3381438],["IMG_2304.MOV",424671805],["IMG_2124.HEIC",2479085],["IMG_2184.HEIC",1889395],["IMG_2148.HEIC",3420446],["IMG_2193.HEIC",3180420],["IMG_2127.HEIC",3973866],["IMG_2173.HEIC",3273207],["IMG_2158.HEIC",2148296],["IMG_2116.HEIC",3458351],["IMG_2234.HEIC",3128370],["IMG_2221.HEIC",2024277],["IMG_2225.HEIC",3830008],["IMG_2123.HEIC",2367606],["IMG_2133.HEIC",2588729]]],["Fete-de-famille",[["RAW",[["DSC02024.ARW",27874672],["DSC02043.ARW",27417762],["DSC02021.ARW",23896382],["DSC02039.ARW",26799058],["DSC02037.ARW",23737334],["DSC02019.ARW",25690869],["DSC02014.ARW",27616666],["DSC02045.ARW",24054903],["DSC02009.ARW",22578699],["DSC02060.ARW",24525912],["DSC02052.ARW",24124243],["DSC02042.ARW",23913295],["DSC02004.ARW",24469854],["DSC02053.ARW",25887360],["DSC02008.ARW",22092579],["DSC02025.ARW",27270419],["DSC02038.ARW",27749705],["DSC02018.ARW",25928302],["DSC02028.ARW",26088422],["DSC02003.ARW",22377274],["DSC02006.ARW",26660675],["DSC02013.ARW",25458886],["DSC02041.ARW",26607360],["DSC02048.ARW",22675585],["DSC02016.ARW",26678540],["DSC02058.ARW",24304635],["DSC02055.ARW",22172765],["DSC02011.ARW",22738121],["DSC02056.ARW",25468762],["DSC02002.ARW",23565149],["DSC02017.ARW",25643530],["DSC02051.ARW",22754091],["DSC02030.ARW",24334283],["DSC02031.ARW",27682381],["DSC02010.ARW",22137866],["DSC02029.ARW",27542392],["DSC02026.ARW",26118780],["DSC02044.ARW",25252941],["DSC02040.ARW",22733891],["DSC02022.ARW",23293817],["DSC02001.ARW",23887610],["DSC02057.ARW",24135828],["DSC02033.ARW",26412321],["DSC02034.ARW",24620448],["DSC02032.ARW",24137907],["DSC02035.ARW",22141979],["DSC02036.ARW",26171803],["DSC02012.ARW",26114959],["DSC02005.ARW",27388324],["DSC02054.ARW",25934799],["DSC02023.ARW",24776019],["DSC02049.ARW",25713821],["DSC02015.ARW",24101840],["DSC02050.ARW",22709697],["DSC02020.ARW",27548463],["DSC02007.ARW",24487169],["DSC02027.ARW",27167804],["DSC02059.ARW",23435835],["DSC02046.ARW",25365177],["DSC02047.ARW",26330069]]],["Selection",[["DSC02012.jpg",7873059],["DSC02007.jpg",7381150],["DSC02036.jpg",10857027],["DSC02037.jpg",10705999],["DSC02006.jpg",9102512],["DSC02026.jpg",8947206],["DSC02008.jpg",6529845],["DSC02021.jpg",8084280],["DSC02028.jpg",10868771],["DSC02040.jpg",7062127],["DSC02003.jpg",8257562],["DSC02019.jpg",8901279],["DSC02018.jpg",8317892],["DSC02041.jpg",6205876],["DSC02027.jpg",5068455],["DSC02020.jpg",10767833],["DSC02034.jpg",10436271],["DSC02025.jpg",6904987],["DSC02002.jpg",5751248],["DSC02029.jpg",7823270],["DSC02009.jpg",5886100],["DSC02032.jpg",10172642],["DSC02038.jpg",6395076],["DSC02023.jpg",8798039],["DSC02031.jpg",9074859],["DSC02011.jpg",6660989],["DSC02013.jpg",6582896],["DSC02014.jpg",6888468],["DSC02042.jpg",7154653],["DSC02022.jpg",6591336],["DSC02039.jpg",9974313],["DSC02030.jpg",10821161],["DSC02045.jpg",7844375],["DSC02010.jpg",5140171],["DSC02016.jpg",8561903],["DSC02024.jpg",9527191],["DSC02004.jpg",8969376],["DSC02001.jpg",6317391],["DSC02035.jpg",7394445],["DSC02043.jpg",8822068],["DSC02044.jpg",8292773],["DSC02017.jpg",10037319],["DSC02005.jpg",10607992],["DSC02015.jpg",10665367],["DSC02033.jpg",10563377]]]]],["Captures",[["Capture 027.png",1364000],["Capture 064.png",1014791],["Capture 049.png",2058501],["Capture 051.png",2450703],["Capture 033.png",933983],["Capture 026.png",2413386],["Capture 021.png",2144472],["Capture 009.png",2112391],["Capture 018.png",2497206],["Capture 059.png",1360231],["Capture 060.png",2223461],["Capture 014.png",1026065],["Capture 017.png",1887872],["Capture 004.png",1625838],["Capture 070.png",1288727],["Capture 061.png",1662001],["Capture 069.png",2464828],["Capture 047.png",1278028],["Capture 037.png",2000022],["Capture 040.png",1421738],["Capture 006.png",2250424],["Capture 054.png",1363047],["Capture 067.png",1583543],["Capture 030.png",1345589],["Capture 007.png",2383539],["Capture 008.png",2062322],["Capture 032.png",1871553],["Capture 023.png",1495678],["Capture 011.png",2019110],["Capture 010.png",1800519],["Capture 022.png",1518612],["Capture 024.png",2395525],["Capture 041.png",989474],["Capture 043.png",593438],["Capture 012.png",1651923],["Capture 020.png",660238],["Capture 052.png",2492503],["Capture 056.png",1416876],["Capture 044.png",1905456],["Capture 065.png",658049],["Capture 050.png",2269998],["Capture 015.png",1867869],["Capture 048.png",1143234],["Capture 025.png",1044367],["Capture 028.png",1663509],["Capture 036.png",1542896],["Capture 063.png",1030209],["Capture 003.png",591570],["Capture 046.png",1573985],["Capture 002.png",1514362],["Capture 042.png",2435972],["Capture 001.png",2003278],["Capture 034.png",764393],["Capture 058.png",2234902],["Capture 039.png",838345],["(15 petits fichiers)",6123543,1]]],["2026-ski-Alpes",[["DSC10475.JPG",5628946],["DSC10421.JPG",6600154],["DSC10426.JPG",4256876],["DSC10439.JPG",4769452],["DSC10493.JPG",6810012],["DSC10474.JPG",6338501],["DSC10466.JPG",6070433],["DJI_0005.MP4",1221130358],["DSC10487.JPG",7916569],["DSC10433.JPG",5518358],["DSC10501.JPG",5473500],["DSC10427.JPG",5735089],["DSC10492.JPG",4783795],["DSC10471.JPG",6488012],["DSC10428.JPG",5767014],["DSC10465.JPG",6126771],["DJI_0004.MP4",604464678],["DSC10509.JPG",7795563],["DSC10473.JPG",6078686],["DSC10447.JPG",4977469],["DSC10484.JPG",8393103],["DSC10480.JPG",8080761],["DSC10445.JPG",4347542],["DSC10497.JPG",7580062],["DSC10463.JPG",8221873],["DSC10442.JPG",5682094],["DSC10467.JPG",4393294],["DSC10507.JPG",4856375],["DSC10496.JPG",4548467],["DSC10508.JPG",7422736],["DSC10446.JPG",5995785],["DSC10430.JPG",4128951],["DSC10486.JPG",6040012],["DSC10449.JPG",4226182],["DJI_0003.MP4",857289367],["DSC10469.JPG",5720329],["DSC10435.JPG",4606864],["DSC10468.JPG",5524546],["DJI_0001.MP4",504044706],["DSC10491.JPG",5759750],["DSC10494.JPG",6861661],["DSC10460.JPG",6584263],["DSC10437.JPG",6858091],["DSC10503.JPG",6778670],["DSC10472.JPG",7901240],["DSC10448.JPG",8607277],["DSC10500.JPG",5072175],["DSC10479.JPG",7983559],["DSC10495.JPG",6691893],["DSC10441.JPG",6168037],["DSC10489.JPG",7351994],["DSC10458.JPG",6649682],["DSC10477.JPG",4600528],["DSC10505.JPG",5318563],["DSC10440.JPG",6598068],["DSC10482.JPG",5156674],["DSC10425.JPG",8438853],["DSC10464.JPG",5949857],["DSC10510.JPG",7611791],["DSC10502.JPG",5340503],["DSC10488.JPG",8247467],["DSC10459.JPG",7927044],["DSC10483.JPG",8768369],["DSC10452.JPG",6259104],["DSC10481.JPG",8239349],["DSC10438.JPG",8024693],["DJI_0006.MP4",620139765],["DSC10453.JPG",7773548],["DSC10429.JPG",7847668],["DSC10456.JPG",8389084],["DJI_0002.MP4",993095187],["DSC10436.JPG",8743910],["DSC10476.JPG",6410263],["DSC10431.JPG",6551939],["DSC10478.JPG",7983012],["DSC10470.JPG",5317218],["DSC10485.JPG",7228396],["DSC10499.JPG",6840207],["DSC10432.JPG",5638800],["DSC10506.JPG",8774378],["DSC10424.JPG",4530669],["DSC10434.JPG",5630213],["DSC10457.JPG",4645698],["DSC10462.JPG",4801953],["DSC10461.JPG",8782937],["DSC10451.JPG",8194901],["DSC10443.JPG",6991098],["DSC10450.JPG",6723832],["DSC10504.JPG",4507278],["DSC10498.JPG",6778998],["DSC10455.JPG",7554727],["DSC10422.JPG",4983485],["DSC10444.JPG",7392491],["DSC10454.JPG",4942646],["DSC10423.JPG",4070659],["DSC10490.JPG",8805993]]]]],["Documents",[["Cours",[["chapitre-08.pdf",29967606],["chapitre-13.pdf",12078253],["chapitre-17.pdf",34067896],["chapitre-10.pdf",11109729],["chapitre-06.pdf",3624135],["chapitre-07.pdf",20328206],["chapitre-01.pdf",23110532],["chapitre-03.pdf",34759459],["chapitre-02.pdf",6464854],["chapitre-15.pdf",14955768],["chapitre-09.pdf",9468946],["chapitre-11.pdf",22959688],["chapitre-14.pdf",10852103],["chapitre-18.pdf",5410575],["chapitre-04.pdf",28344475],["chapitre-12.pdf",3123090],["chapitre-05.pdf",28339797],["chapitre-16.pdf",28066762]]],["Livres",[["livre-04.epub",4444167],["livre-01.epub",1703840],["livre-19.epub",4668791],["livre-16.epub",5230452],["livre-11.epub",3478964],["livre-09.epub",2382394],["livre-17.epub",944912],["livre-06.epub",3187276],["livre-03.epub",4218578],["livre-15.epub",2713914],["livre-20.epub",614358],["livre-13.epub",3986912],["livre-02.epub",2468464],["livre-08.epub",3939458],["livre-07.epub",2859231],["livre-10.epub",2496935],["livre-05.epub",5650705],["livre-14.epub",2394219],["livre-18.epub",4062210],["livre-12.epub",1897044]]],["Factures",[["(36 petits fichiers)",7057963,1]]],["Rapports",[["rapport-04.docx",3432135],["budget-04.xlsx",1521792],["budget-08.xlsx",2250409],["presentation-03.pptx",16141306],["rapport-05.docx",3934425],["rapport-08.docx",7545408],["rapport-12.docx",6099613],["rapport-03.docx",5487363],["budget-07.xlsx",1036333],["presentation-02.pptx",16081389],["rapport-11.docx",729933],["rapport-09.docx",7300734],["rapport-07.docx",1221390],["presentation-05.pptx",6652858],["rapport-06.docx",2414796],["rapport-01.docx",2594078],["rapport-02.docx",2215751],["presentation-06.pptx",22334168],["budget-06.xlsx",1265173],["presentation-01.pptx",9954218],["budget-05.xlsx",1586476],["presentation-04.pptx",34712349],["budget-02.xlsx",2530380],["(3 petits fichiers)",1027822,1]]]]],["Videos",[["Montage-voyage",[["voyage.prproj",46000000],["Musique",[["piste-01.wav",62266614],["piste-06.wav",42911677],["piste-05.wav",61365228],["piste-02.wav",38075341],["piste-04.wav",45920917],["piste-03.wav",52318448]]],["Rushes",[["C0011.MP4",1172770953],["C0009.MP4",950577574],["C0006.MP4",719528739],["C0002.MP4",1230942618],["C0012.MP4",865510681],["C0014.MP4",361441782],["C0003.MP4",764618072],["C0005.MP4",1124186528],["C0013.MP4",1040175480],["C0010.MP4",1368668267],["C0004.MP4",1082888806],["C0001.MP4",1429869458],["C0007.MP4",1477824324],["C0008.MP4",413267144]]],["Export",[["voyage-final-1080p.mp4",690000000],["voyage-final-4K.mov",3800000000]]]]],["Tutoriels",[["cours-04.mkv",833116006],["cours-01.mkv",414001458],["cours-02.mkv",544515909],["cours-08.mkv",307255149],["cours-05.mkv",701170971],["cours-07.mkv",470209936],["cours-03.mkv",418833097],["cours-06.mkv",797220966]]]]],["Code",[["appli-mobile",[["app",[["src",[["(25 petits fichiers)",423715,1]]],["res",[["(40 petits fichiers)",2411105,1]]]]],["build",[["intermediates",[["classes.jar",210000000]]],["outputs",[["app-release-2.apk",69083885],["app-release-1.apk",49792329],["app-release-3.apk",56549908]]]]]]],["analyse-donnees",[["notebooks",[["etude-03.ipynb",3987636],["etude-05.ipynb",3769750],["etude-06.ipynb",4151085],["etude-01.ipynb",999861],["etude-04.ipynb",3789933],["etude-07.ipynb",5861416],["etude-02.ipynb",2217705]]],["data",[["resultats-03.parquet",134576013],["mesures-07.csv",92954759],["mesures-08.csv",331077260],["resultats-04.parquet",139200740],["mesures-05.csv",188302719],["mesures-02.csv",323472708],["resultats-01.parquet",59713191],["mesures-06.csv",167429773],["resultats-02.parquet",119240946],["mesures-01.csv",411152398],["mesures-03.csv",118230832],["mesures-09.csv",40929159],["mesures-04.csv",431089189],["resultats-05.parquet",174009578]]],["(10 petits fichiers)",178782,1]]],["site-perso",[["src",[["styles",[["(12 petits fichiers)",171890,1]]],["(30 petits fichiers)",808145,1]]],["public",[["img",[["illustration-02.webp",675444],["illustration-11.webp",737519],["illustration-05.webp",657950],["illustration-15.webp",752118],["illustration-12.webp",789644],["illustration-23.webp",637539],["illustration-04.webp",577553],["illustration-17.webp",869743],["illustration-09.webp",735306],["illustration-08.webp",733798],["illustration-25.webp",590695],["illustration-18.webp",648219],["illustration-22.webp",696113],["illustration-21.webp",648244],["(11 petits fichiers)",3357120,1]]]]],[".git",[["objects",[["pack",[["pack-02.pack",15036225],["pack-03.pack",27108676],["pack-01.pack",31011726]]]]]]],["node_modules",[["react",[["dist",[["(49 petits fichiers)",9874480,1]]]]],["vite",[["dist",[["(60 petits fichiers)",12274980,1]]]]],["date-fns",[["dist",[["(26 petits fichiers)",4323974,1]]]]],["rollup",[["dist",[["(25 petits fichiers)",3973247,1]]]]],["typescript",[["dist",[["(35 petits fichiers)",6829705,1]]],["lib",[["typescript.js",8900000]]]]],["esbuild",[["dist",[["(30 petits fichiers)",6614300,1]]],["bin",[["esbuild",9600000]]]]],["zod",[["dist",[["(43 petits fichiers)",7967144,1]]]]],["lodash",[["dist",[["(42 petits fichiers)",8638449,1]]]]],["prettier",[["dist",[["(53 petits fichiers)",9316640,1]]]]],["postcss",[["dist",[["(17 petits fichiers)",4691058,1]]]]],["tailwindcss",[["dist",[["(15 petits fichiers)",3300310,1]]]]],["eslint",[["dist",[["(22 petits fichiers)",4182260,1]]]]]]]]]]],["Musique",[["Album 04",[["09 - Titre.mp3",8911843],["06 - Titre.mp3",6798344],["04 - Titre.mp3",8537577],["10 - Titre.mp3",4914194],["01 - Titre.mp3",9350587],["07 - Titre.mp3",5210786],["08 - Titre.mp3",5869384],["05 - Titre.mp3",4420219],["02 - Titre.mp3",7616832],["12 - Titre.mp3",8281982],["11 - Titre.mp3",8052659],["14 - Titre.mp3",9614629],["13 - Titre.mp3",9830453],["03 - Titre.mp3",6971054]]],["Album 02",[["09 - Titre.mp3",4862653],["06 - Titre.mp3",5640050],["04 - Titre.mp3",5017536],["01 - Titre.mp3",6240241],["07 - Titre.mp3",10805746],["08 - Titre.mp3",7929099],["05 - Titre.mp3",8388137],["02 - Titre.mp3",9888260],["03 - Titre.mp3",7111144]]],["Lossless",[["23 - Titre.flac",40368811],["02 - Titre.flac",53170875],["01 - Titre.flac",25849130],["22 - Titre.flac",36026251],["07 - Titre.flac",53304534],["10 - Titre.flac",35306743],["24 - Titre.flac",46964375],["15 - Titre.flac",32503065],["21 - Titre.flac",38983510],["13 - Titre.flac",39649482],["04 - Titre.flac",41506970],["08 - Titre.flac",39123093],["09 - Titre.flac",44891540],["05 - Titre.flac",40402787],["16 - Titre.flac",44307921],["18 - Titre.flac",39420369],["11 - Titre.flac",34534548],["17 - Titre.flac",28997029],["20 - Titre.flac",50095517],["19 - Titre.flac",35985622],["14 - Titre.flac",34811000],["03 - Titre.flac",26334372],["12 - Titre.flac",39390772],["06 - Titre.flac",31940619]]],["Album 03",[["09 - Titre.mp3",7462790],["06 - Titre.mp3",6867621],["04 - Titre.mp3",7848139],["10 - Titre.mp3",8747414],["01 - Titre.mp3",8020718],["07 - Titre.mp3",4665042],["08 - Titre.mp3",9370078],["05 - Titre.mp3",6304189],["02 - Titre.mp3",8432343],["11 - Titre.mp3",8430904],["03 - Titre.mp3",6796152]]],["Album 05",[["09 - Titre.mp3",7199956],["06 - Titre.mp3",5880509],["04 - Titre.mp3",4845881],["10 - Titre.mp3",5938366],["01 - Titre.mp3",6371225],["07 - Titre.mp3",4124516],["08 - Titre.mp3",5464569],["05 - Titre.mp3",9963246],["02 - Titre.mp3",4262469],["12 - Titre.mp3",4552915],["11 - Titre.mp3",8411188],["03 - Titre.mp3",5539097]]],["Album 01",[["09 - Titre.mp3",9201205],["06 - Titre.mp3",9622678],["04 - Titre.mp3",9510287],["10 - Titre.mp3",8597889],["01 - Titre.mp3",5541195],["07 - Titre.mp3",6671393],["08 - Titre.mp3",5080649],["05 - Titre.mp3",6867899],["02 - Titre.mp3",8824127],["12 - Titre.mp3",5873403],["11 - Titre.mp3",4893088],["03 - Titre.mp3",6439826]]],["Album 06",[["09 - Titre.mp3",8938611],["06 - Titre.mp3",10601623],["04 - Titre.mp3",5090789],["10 - Titre.mp3",4589975],["01 - Titre.mp3",5313568],["07 - Titre.mp3",5444596],["08 - Titre.mp3",8712000],["05 - Titre.mp3",10806192],["02 - Titre.mp3",9382571],["12 - Titre.mp3",7652605],["11 - Titre.mp3",6919273],["14 - Titre.mp3",4932767],["13 - Titre.mp3",8123425],["03 - Titre.mp3",10878104]]]]],["Archives",[["ancien-portable.dmg",4400000000],["sauvegarde-2024.zip",6200000000],["Installateurs",[["installateur-05.pkg",265570955],["installateur-04.pkg",696953609],["installateur-03.pkg",787515280],["installateur-01.pkg",732028069],["installateur-02.pkg",548933799]]],["photos-2019.tar.gz",2900000000]]],["Design",[["Logos",[["logo-09.ai",27456929],["logo-05.ai",4998345],["logo-06.ai",29241080],["logo-08.ai",8489425],["logo-04.ai",4232845],["logo-07.ai",16340227],["logo-03.ai",28832294],["logo-02.ai",9547873],["logo-01.ai",11234847],["(9 petits fichiers)",930741,1]]],["Polices",[["Police-03.otf",773447],["Police-06.otf",680302],["Police-13.otf",805271],["Police-08.otf",651981],["Police-04.otf",794283],["Police-14.otf",681910],["Police-11.otf",881885],["Police-10.otf",708699],["(6 petits fichiers)",2465646,1]]],["Affiches",[["affiche-05.psd",138084537],["affiche-06.psd",307641097],["affiche-07.psd",223134319],["affiche-03.psd",302163373],["affiche-04.psd",103040586],["affiche-02.psd",315121306],["affiche-01.psd",243687488],["Exports",[["affiche-07.png",10098802],["affiche-03.png",6915254],["affiche-06.png",7649406],["affiche-02.png",10099936],["affiche-05.png",4296216],["affiche-04.png",4338437],["affiche-01.png",10851418]]]]]]]]];
-const META = {"name": "Projets", "files": 1290, "errors": 0, "date": "18/11/2026 11:46"};
+const META = {"name": "Projets", "files": 1290, "errors": 0, "date": "18/11/2026 14:02"};
 
 // ---------- Données ----------
 const NOEXT = '(sans extension)', MISC = '(divers)';
@@ -136,9 +176,11 @@ const pct = (a, b) => b ? fmtNum.format(100 * a / b) + ' %' : '';
 function pathOf(n) { const p = []; for (; n; n = n.p) p.unshift(n.n); return p.join('/'); }
 
 // ---------- Types / couleurs ----------
-const PALETTE = ['#4c9aff', '#ff5c5c', '#3ecf8e', '#f5c542', '#b07cff', '#ff8a3d',
-                 '#2fd3d3', '#ff6fb5', '#9bd13d', '#8892ff', '#c9a27a'];
-const OTHER = '#6b6b73', DIRCOL = '#4a4a52';
+// mêmes teintes que kanban-terminal
+const PALETTE = ['#4f8ff7', '#e06c75', '#3fa45b', '#d7a700', '#c065c9', '#e5843a',
+                 '#56b6c2', '#d6609a', '#8db33a', '#7b83eb', '#b08f6a'];
+const OTHER = '#8a8f98';
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const exts = new Map();
 (function walk(n) {
   if (n.c) { n.c.forEach(walk); return; }
@@ -159,11 +201,11 @@ function shade(col) {
   if (!s) { s = [mix(col, .28), col, mix(col, -.38)]; shades.set(col, s); }
   return s;
 }
-const colOf = n => n.c ? DIRCOL : exts.get(n.e).col;
+const colOf = n => n.c ? css('--dir') : exts.get(n.e).col;
 let filter = null; // extension mise en évidence
 
 // ---------- Mise en page (treemap « squarified ») ----------
-let gen = 0, W = 0, H = 0;
+let gen = 0, W = 0, H = 0, BG = '#1e1f22', FG = '#d8dadf';
 function layout(n, x, y, w, h) {
   n.x = x; n.y = y; n.w = w; n.h = h; n.g = gen; n.r = false;
   if (!n.c || w < 3 || h < 3 || !n.s) return;
@@ -214,7 +256,7 @@ function draw(n, depth) {
     for (const k of n.c) { if (k.g !== gen) break; draw(k, depth + 1); }
     if (depth === 1 || depth === 2) {
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = depth === 1 ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.45)';
+      ctx.strokeStyle = depth === 1 ? BG : 'rgba(0,0,0,.35)';
       ctx.lineWidth = depth === 1 ? 2 : 1;
       ctx.strokeRect(n.x, n.y, n.w, n.h);
     }
@@ -227,7 +269,8 @@ function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); octx.setTransform(dpr, 0, 0, dpr, 0, 0);
   gen++;
   layout(view, 0, 0, W, H);
-  ctx.globalAlpha = 1; ctx.fillStyle = '#0b0b0c'; ctx.fillRect(0, 0, W, H);
+  BG = css('--bg'); FG = css('--fg');
+  ctx.globalAlpha = 1; ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
   draw(view, 0);
   ctx.globalAlpha = 1;
   drawOver();
@@ -256,11 +299,11 @@ function outline(n, col, lw) {
 }
 function drawOver() {
   octx.clearRect(0, 0, W, H);
-  if (sideHover) { outline(sideHover, '#fff', 2); return; }
+  if (sideHover) { outline(sideHover, FG, 2); return; }
   if (!hover) return;
   const t = topOf(hover);
-  if (t && t !== hover) outline(t, 'rgba(255,255,255,.55)', 1.5);
-  outline(hover, '#fff', 2);
+  if (t && t !== hover) { octx.globalAlpha = .55; outline(t, FG, 1.5); octx.globalAlpha = 1; }
+  outline(hover, FG, 2);
 }
 const tip = document.getElementById('tip'), status = document.getElementById('status');
 function showTip(n, ev) {
@@ -277,8 +320,8 @@ function showTip(n, ev) {
   if (y + th > innerHeight - 6) y = ev.clientY - th - 10;
   tip.style.left = Math.max(4, x) + 'px'; tip.style.top = Math.max(4, y) + 'px';
 }
-const TOUCH_STATUS = 'Touchez la carte pour identifier · touchez à nouveau pour entrer · ↑ Parent pour remonter';
-const DEFAULT_STATUS = matchMedia('(hover: none)').matches ? TOUCH_STATUS : status.textContent;
+const TOUCH_STATUS = 'toucher : identifier · toucher à nouveau : entrer · ↑ parent : remonter';
+const DEFAULT_STATUS = matchMedia('(hover: none)').matches ? TOUCH_STATUS : ''; // à la souris, la ligne des touches suffit
 status.textContent = DEFAULT_STATUS;
 function nodeAt(ev) {
   const r = map.getBoundingClientRect();
@@ -286,7 +329,7 @@ function nodeAt(ev) {
 }
 function point(n, ev) { // met en évidence n (survol à la souris, premier toucher au doigt)
   if (n !== hover) { hover = n; drawOver(); markRow(); }
-  if (n) { showTip(n, ev); status.textContent = pathOf(n) + '  —  ' + fmt(n.s); }
+  if (n) { showTip(n, ev); status.textContent = pathOf(n) + ' · ' + fmt(n.s); }
   else { tip.style.display = 'none'; status.textContent = DEFAULT_STATUS; }
 }
 function unpoint() {
@@ -319,8 +362,19 @@ function go(n) {
 }
 document.getElementById('up').onclick = () => { if (view.p) go(view.p); };
 addEventListener('keydown', ev => {
+  if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
   if ((ev.key === 'Escape' || ev.key === 'Backspace') && view.p) { ev.preventDefault(); go(view.p); }
+  else if (ev.key === 'T') toggleTheme();
 });
+function toggleTheme() { // comme kanban-terminal : clair / sombre, sinon celui du système
+  const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+  render(); renderContent(); renderTypes();
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { render(); renderContent(); renderTypes(); });
+const sub = document.getElementById('sub');
+if (!sub.textContent.trim()) sub.textContent = 'carte de « ' + META.name + ' » · ' + fmt(root.s) + ' · ' +
+  META.files.toLocaleString('fr-FR') + ' fichiers · ' + META.date;
 function renderCrumbs() {
   const el = document.getElementById('crumbs'); el.textContent = '';
   const chain = []; for (let n = view; n; n = n.p) chain.unshift(n);
@@ -330,8 +384,7 @@ function renderCrumbs() {
     else { const b = document.createElement('button'); b.textContent = n.n; b.onclick = () => go(n); el.append(b); }
   });
   document.getElementById('up').disabled = !view.p;
-  document.getElementById('info').textContent = fmt(view.s) +
-    (view === root ? ' · ' + META.files.toLocaleString('fr-FR') + ' fichiers · ' + META.date : ' · ' + pct(view.s, root.s) + ' du total');
+  document.getElementById('info').textContent = fmt(view.s) + (view === root ? '' : ' · ' + pct(view.s, root.s));
 }
 
 // ---------- Panneau latéral ----------
@@ -360,7 +413,7 @@ function renderContent() {
     rowOf.set(n, r); el.append(r);
   });
   if (view.c.length > MAXROWS) {
-    const more = document.createElement('div'); more.className = 'row'; more.style.color = 'var(--dim)';
+    const more = document.createElement('div'); more.className = 'row'; more.style.color = 'var(--muted)';
     more.textContent = '… et ' + (view.c.length - MAXROWS) + ' autres éléments';
     el.append(more);
   }

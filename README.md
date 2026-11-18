@@ -16,6 +16,7 @@ Every file is a rectangle sized by its weight and coloured by its type, so the b
 - **Contents panel**: the current folder's items, sorted by size.
 - **File types panel**: total size per extension; click one to highlight those files on the map.
 - **Touch screens**: tap to identify a tile, tap again to enter its folder.
+- **Light and dark themes**: same look as [kanban-terminal](https://antoine123456.github.io/kanban-terminal/); follows the system setting, `T` toggles.
 
 ![Highlighting one file type](docs/filter.png)
 
