@@ -125,7 +125,8 @@ TEMPLATE = r"""<!DOCTYPE html>
   #up:disabled { opacity:.35; cursor:default; }
   #info { margin-left:auto; color:var(--dim); white-space:nowrap; font-variant-numeric:tabular-nums; }
   main { flex:1; display:flex; min-height:0; }
-  #map { flex:1; position:relative; min-width:0; cursor:pointer; }
+  #map { flex:1; position:relative; min-width:0; cursor:pointer; touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent; }
   #map canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
   #over { pointer-events:none; }
   aside { flex:none; width:320px; border-left:1px solid var(--line); background:var(--panel);
@@ -153,6 +154,20 @@ TEMPLATE = r"""<!DOCTYPE html>
   #tip .p { color:var(--dim); font-size:12px; word-break:break-all; }
   footer { flex:none; padding:5px 12px; border-top:1px solid var(--line); color:var(--dim);
     font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:27px; }
+  @media (max-width: 720px) {
+    header { flex-wrap:wrap; gap:2px 10px; padding:4px 8px; min-height:0; }
+    #up { padding:3px 8px; }
+    #info { margin-left:0; width:100%; order:3; font-size:12px; white-space:normal; }
+    main { flex-direction:column; }
+    #map { min-height:0; }
+    aside { width:auto; height:30vh; border-left:0; border-top:1px solid var(--line); flex-direction:row; }
+    aside section + section { border-top:0; border-left:1px solid var(--line); }
+    aside section { min-width:0; }
+    .row { padding:5px 8px; gap:6px; }
+    .row .pc { display:none; }
+    #tip { max-width:calc(100vw - 16px); }
+    footer { white-space:normal; }
+  }
 </style>
 </head>
 <body>
@@ -349,25 +364,44 @@ function showTip(n, ev) {
   if (y + th > innerHeight - 6) y = ev.clientY - th - 10;
   tip.style.left = Math.max(4, x) + 'px'; tip.style.top = Math.max(4, y) + 'px';
 }
-const DEFAULT_STATUS = status.textContent;
-map.addEventListener('mousemove', ev => {
+const TOUCH_STATUS = 'Touchez la carte pour identifier · touchez à nouveau pour entrer · ↑ Parent pour remonter';
+const DEFAULT_STATUS = matchMedia('(hover: none)').matches ? TOUCH_STATUS : status.textContent;
+status.textContent = DEFAULT_STATUS;
+function nodeAt(ev) {
   const r = map.getBoundingClientRect();
-  const n = hit(ev.clientX - r.left, ev.clientY - r.top);
+  return hit(ev.clientX - r.left, ev.clientY - r.top);
+}
+function point(n, ev) { // met en évidence n (survol à la souris, premier toucher au doigt)
   if (n !== hover) { hover = n; drawOver(); markRow(); }
   if (n) { showTip(n, ev); status.textContent = pathOf(n) + '  —  ' + fmt(n.s); }
   else { tip.style.display = 'none'; status.textContent = DEFAULT_STATUS; }
-});
-map.addEventListener('mouseleave', () => {
+}
+function unpoint() {
   hover = null; tip.style.display = 'none'; status.textContent = DEFAULT_STATUS; drawOver(); markRow();
-});
-map.addEventListener('click', () => {
-  const t = hover && topOf(hover);
+}
+// Souris : le survol suit le pointeur. Toucher : le premier toucher montre l'élément,
+// un second toucher dans le même dossier y entre.
+let lastPointer = 'mouse';
+map.addEventListener('pointermove', ev => { if (ev.pointerType === 'mouse') point(nodeAt(ev), ev); });
+map.addEventListener('pointerleave', ev => { if (ev.pointerType === 'mouse') unpoint(); });
+map.addEventListener('pointerdown', ev => { lastPointer = ev.pointerType; });
+map.addEventListener('click', ev => {
+  const n = nodeAt(ev), t = n && topOf(n);
+  if (lastPointer !== 'mouse') {
+    const prev = hover && topOf(hover);
+    if (t && t.c && t === prev) go(t);
+    else point(n, ev);
+    return;
+  }
   if (t && t.c) go(t);
+});
+document.addEventListener('pointerdown', ev => {
+  if (ev.pointerType !== 'mouse' && hover && !map.contains(ev.target)) unpoint();
 });
 
 // ---------- Navigation ----------
 function go(n) {
-  view = n; hover = null; sideHover = null; tip.style.display = 'none';
+  view = n; hover = null; sideHover = null; tip.style.display = 'none'; status.textContent = DEFAULT_STATUS;
   render(); renderCrumbs(); renderContent();
 }
 document.getElementById('up').onclick = () => { if (view.p) go(view.p); };
